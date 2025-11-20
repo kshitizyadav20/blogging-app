@@ -1,5 +1,6 @@
 package com.Kshitiz.blog.controllers;
 
+import com.Kshitiz.blog.payloads.ApiResponse;
 import com.Kshitiz.blog.payloads.CategoryDto;
 import com.Kshitiz.blog.payloads.PostDto;
 import com.Kshitiz.blog.services.PostService;
@@ -35,7 +36,37 @@ public class PostController {
     //get by category
     @GetMapping("/category/{categoryId}/posts")
     public ResponseEntity<List<PostDto>> getPostByCategory(@PathVariable Integer categoryId){
-        List<PostDto> posts = this.postService.getPostsbyUser(categoryId);
+        List<PostDto> posts = this.postService.getPostsByCategory(categoryId);
         return new ResponseEntity<List<PostDto>>(posts,HttpStatus.OK);
+    }
+
+    //get all posts
+    @GetMapping("/posts")
+    public ResponseEntity<List<PostDto>> getAllPost(){
+        List<PostDto> allPost = this.postService.getAllPost();
+        return new ResponseEntity <List<PostDto>>(allPost, HttpStatus.OK);
+    }
+
+    //get posts by Id
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<PostDto> getSinglePost(@PathVariable Integer postId)
+    {
+        return ResponseEntity.ok(this.postService.getPostById(postId));
+    }
+
+    //delete post
+    @DeleteMapping("/posts/{postId}")
+    public ApiResponse deletePost(@PathVariable Integer postId)
+    {
+        this.postService.deletePost(postId);
+        return new ApiResponse("Post is successfully deleted!!", true);
+    }
+
+    //update post
+    @PutMapping("/posts/{postId}")
+    public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto, @PathVariable Integer postId)
+    {
+        PostDto updatePost = this.postService.updatePost(postDto, postId);
+        return new ResponseEntity<PostDto>(updatePost, HttpStatus.OK);
     }
 }
