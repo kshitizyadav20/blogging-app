@@ -1,8 +1,10 @@
 package com.Kshitiz.blog.controllers;
 
+import com.Kshitiz.blog.config.AppConstants;
 import com.Kshitiz.blog.payloads.ApiResponse;
 import com.Kshitiz.blog.payloads.CategoryDto;
 import com.Kshitiz.blog.payloads.PostDto;
+import com.Kshitiz.blog.payloads.PostResponse;
 import com.Kshitiz.blog.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,23 +30,32 @@ public class PostController {
 
     //get by user
     @GetMapping("/user/{userId}/posts")
-    public ResponseEntity<List<PostDto>> getPostByUser(@PathVariable Integer userId){
-       List<PostDto> posts = this.postService.getPostsbyUser(userId);
-       return new ResponseEntity<List<PostDto>>(posts,HttpStatus.OK);
+    public ResponseEntity<PostResponse> getPostByUser(@RequestParam(value = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER,required = false)Integer pageNumber,
+                                                      @RequestParam(value="pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false)Integer pageSize,@PathVariable Integer userId){
+        PostResponse postResponse = this.postService.getPostsbyUser(pageNumber,pageSize,userId);
+       return new ResponseEntity<PostResponse>(postResponse,HttpStatus.OK);
     }
 
     //get by category
     @GetMapping("/category/{categoryId}/posts")
-    public ResponseEntity<List<PostDto>> getPostByCategory(@PathVariable Integer categoryId){
-        List<PostDto> posts = this.postService.getPostsByCategory(categoryId);
-        return new ResponseEntity<List<PostDto>>(posts,HttpStatus.OK);
+    public ResponseEntity<PostResponse> getPostByCategory(
+            @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @PathVariable Integer categoryId){
+
+        PostResponse posts = this.postService.getPostsByCategory(categoryId, pageNumber, pageSize);
+        return new ResponseEntity<PostResponse>(posts,HttpStatus.OK);
     }
+
 
     //get all posts
     @GetMapping("/posts")
-    public ResponseEntity<List<PostDto>> getAllPost(){
-        List<PostDto> allPost = this.postService.getAllPost();
-        return new ResponseEntity <List<PostDto>>(allPost, HttpStatus.OK);
+    public ResponseEntity<PostResponse> getAllPost(@RequestParam(value = "pageNumber",defaultValue = AppConstants.PAGE_NUMBER,required = false)Integer pageNumber,
+                                                   @RequestParam(value="pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false)Integer pageSize,
+                                                   @RequestParam(value = "sortBy",defaultValue = AppConstants.SORT_BY,required = false)String sortBy,
+                                                   @RequestParam(value = "sortDir",defaultValue = AppConstants.SORT_DIR,required = false)String sortDir){
+        PostResponse postResponse = this.postService.getAllPost(pageNumber,pageSize,sortBy,sortDir);
+        return new ResponseEntity <PostResponse>(postResponse, HttpStatus.OK);
     }
 
     //get posts by Id
@@ -69,4 +80,14 @@ public class PostController {
         PostDto updatePost = this.postService.updatePost(postDto, postId);
         return new ResponseEntity<PostDto>(updatePost, HttpStatus.OK);
     }
+
+    //search
+    @GetMapping("posts/search/{keywords}")
+    public ResponseEntity<List<PostDto>> searchPostByTitle(
+        @PathVariable("keywords") String keywords)
+        {
+      List<PostDto> result = this.postService.searchPosts(keywords);
+      return new ResponseEntity<List<PostDto>>(result,HttpStatus.OK);
+    }
+
 }

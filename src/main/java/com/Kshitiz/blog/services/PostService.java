@@ -2,6 +2,7 @@ package com.Kshitiz.blog.services;
 
 import com.Kshitiz.blog.entities.Post;
 import com.Kshitiz.blog.payloads.PostDto;
+import com.Kshitiz.blog.payloads.PostResponse;
 
 import java.util.List;
 
@@ -17,18 +18,19 @@ public interface PostService {
         void deletePost(Integer postId);
 
     //get all posts
-        List<PostDto> getAllPost();
+        PostResponse getAllPost(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 
     //get single post
         PostDto getPostById(Integer postId);
 
     //get all post by category
-        List<PostDto> getPostsByCategory(Integer categoryId);
+    PostResponse getPostsByCategory(Integer categoryId, Integer pageNumber, Integer pageSize);
+
 
     //get all posts by user
-        List<PostDto> getPostsbyUser(Integer userId);
+    PostResponse getPostsbyUser(Integer pageNumber, Integer pageSize, Integer userId);
 
     //search posts
-        List<Post> searchPosts(String keywords);
+    List<PostDto> searchPosts(String keyword);
 
 }
