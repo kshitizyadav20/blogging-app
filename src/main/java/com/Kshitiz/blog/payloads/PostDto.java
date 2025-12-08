@@ -1,6 +1,7 @@
 package com.Kshitiz.blog.payloads;
 
 import com.Kshitiz.blog.entities.Category;
+import com.Kshitiz.blog.entities.Comment;
 import com.Kshitiz.blog.entities.User;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,6 +30,8 @@ public class PostDto {
     private CategoryDto category;
 
     private UserDto user;
+
+    private Set<CommentDto> comments = new HashSet<>();
 
 
 }
