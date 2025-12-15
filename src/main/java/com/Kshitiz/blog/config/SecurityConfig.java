@@ -1,6 +1,9 @@
 package com.Kshitiz.blog.config;
 
 import com.Kshitiz.blog.security.CustomUserDetailService;
+import com.Kshitiz.blog.security.JwtAuthenticationEntryPoint;
+import com.Kshitiz.blog.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,56 +11,50 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // 1️⃣ UserDetailsService bean
-    @Bean
-    public CustomUserDetailService customUserDetailService() {
-        return new CustomUserDetailService();
-    }
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    // 2️⃣ Password encoder bean
+    @Autowired
+    private CustomUserDetailService customUserDetailService;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 3️⃣ Authentication Provider (this replaces old configure(AuthenticationManagerBuilder))
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-
-        provider.setUserDetailsService(customUserDetailService());
-        provider.setPasswordEncoder(passwordEncoder());
-
-        return provider;
-    }
-
-    // 4️⃣ Authentication Manager (needed for login)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // 5️⃣ HTTP Security configuration (this replaces old configure(HttpSecurity))
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(cs -> cs.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/login", "/api/users/").permitAll()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider()) // <-- IMPORTANT
-                .httpBasic(httpBasic -> {}); // basic auth popup
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // ❌ DO NOT register DaoAuthenticationProvider manually
+        // ❌ DO NOT add .authenticationProvider(authenticationProvider())
+
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+
